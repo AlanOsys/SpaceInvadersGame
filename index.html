@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <head>
-<title>Dungeon Crawler</title>
+<title>Space Invaders</title>
 
 <style type="text/css">
 body {
@@ -14,7 +14,31 @@ body {
   -ms-user-select: none; /* IE 10 and IE 11 */
   user-select: none; /* Standard syntax */
 }
+#container{
+    width: 300px;
+    height: 300px;
+    background-color: #16161d;
+    left: 0px;
+    top: 0xp;
+    position: absolute;
+}
+.Entity{
+    background-color: aliceblue;
+    width: 40px;
+    height: 40px;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+}
+.ProjectileEntity{
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    background-color: aquamarine;
+    left: 0px;
+    top: 0px;
 
+}
 </style>
 
 </head>
@@ -22,7 +46,159 @@ body {
 <body>
     <div id="container"></div>
 <script>
+    container = document.getElementById("container")
+    class Invader{
+        constructor(name) {
+            this.name = name
+            this.speed = 1
+            this.direction = 'left'
+            this.maxSpeed = 2
+            this.attackSpeed = 1
+        }
+        instantiate(){
+            var Entity = document.createElement("div")
+            this.Entity = Entity
 
+            this.Entity.innerHTML = 40-this.attackSpeed*5
+            Entity.id = this.name
+            Entity.className = "Entity"
+            container.appendChild(Entity)
+        }
+    }
+    class Projectile{
+        constructor(invader,EnemyInvader){
+            this.invader = invader
+            this.EnemyInvader = EnemyInvader
+            
+        }
+        instantiate(){
+            var ProjectileEntity = document.createElement("div")
+            this.ProjectileEntity = ProjectileEntity
+            ProjectileEntity.className = "ProjectileEntity"
+            ProjectileEntity.style.top = this.invader.Entity.style.top
+            ProjectileEntity.style.left = this.invader.Entity.style.left
+            ProjectileEntity.style.width = 20-this.invader.attackSpeed*3+"px"
+            if(this.invader.name == "Shotgun"){
+                ProjectileEntity.style.width = "70px"
+            }
+            if(parseInt(ProjectileEntity.style.top)>100){
+                this.direction = 'down'
+            }else{
+                this.direction = 'up'
+            }
+            
+            container.appendChild(ProjectileEntity)
+            //console.log("pp")
+        }
+    }
+    function Initialise(){
+        inv = new Invader("Shotgun")
+        
+        opp = new Invader("Speedster")
+        
+
+        //Speedster = ms5
+        opp.maxSpeed = 1
+        opp.instantiate()
+        opp.Entity.style.backgroundColor = "yellow"
+
+        //Shooter = as4
+        inv.attackSpeed = 1
+        inv.instantiate()
+        inv.Entity.style.backgroundColor = "green"
+        
+
+        opp.Entity.style.left = "130px"
+        opp.Entity.style.top = "260px"
+        
+        inv.Entity.style.left = "130px"
+        inv.Entity.style.top = "1px"
+
+
+        InvaderArray = [inv,opp]
+        Projectiles = []
+    }
+    
+Initialise()
+Finished = false
+const interval = setInterval(function() {
+    if(!Finished){
+    for(let i = 0;i<InvaderArray.length;i++){
+        if(InvaderArray[i].direction == 'left'){
+            if(parseInt(InvaderArray[i].Entity.style.left) <= 0){
+                InvaderArray[i].direction = 'right'
+                InvaderArray[i].speed = (Math.random()*InvaderArray[i].maxSpeed)+1
+            }else{
+                InvaderArray[i].Entity.style.left = parseInt(InvaderArray[i].Entity.style.left)-InvaderArray[i].speed + "px"
+            }
+        }else{
+            if(parseInt(InvaderArray[i].Entity.style.left) >= 260){
+                InvaderArray[i].direction = 'left'
+                InvaderArray[i].speed = (Math.random()*InvaderArray[i].maxSpeed)+1
+            }else{
+                InvaderArray[i].Entity.style.left = parseInt(InvaderArray[i].Entity.style.left)+InvaderArray[i].speed + "px"
+            }
+        }
+        ShootChance = (Math.random()*300)//InvaderArray[i].Entity.attackSpeed
+        if(ShootChance <= InvaderArray[i].attackSpeed){
+            if(i == 0){
+                EnemyInvader = InvaderArray[1]
+            }else{
+                EnemyInvader = InvaderArray[0]
+            }
+            newProj = new Projectile(InvaderArray[i],EnemyInvader)
+            Projectiles.push(newProj)
+            
+            newProj.instantiate()
+            //newProj.ProjectileEntity.style.width = 20-InvaderArray[i].attackSpeed*3+"px"
+            newProj.ProjectileEntity.style.backgroundColor = InvaderArray[i].Entity.style.backgroundColor
+        }
+    }
+    projectilesToDestroy = []
+    for(let j = 0;j<Projectiles.length;j++){
+        //console.log(Projectiles[j].ProjectileEntity.style.top)
+        if(Projectiles[j].ProjectileEntity){
+            if(Projectiles[j].direction == 'down'){
+                Projectiles[j].ProjectileEntity.style.top = parseInt(Projectiles[j].ProjectileEntity.style.top)-1+"px"
+            }else{
+                Projectiles[j].ProjectileEntity.style.top = (parseInt(Projectiles[j].ProjectileEntity.style.top)+1)+"px"
+            }
+            //console.log(newProj.ProjectileEntity.getBoundingClientRect(),
+             //           EnemyInvader.Entity.getBoundingClientRect())
+            //console.log(overlapping(newProj.ProjectileEntity,EnemyInvader.Entity))
+            if(overlapping(Projectiles[j].ProjectileEntity,Projectiles[j].EnemyInvader.Entity)){
+                Projectiles[j].EnemyInvader.Entity.innerHTML = parseInt(Projectiles[j].EnemyInvader.Entity.innerHTML)-1
+                Projectiles[j].ProjectileEntity.remove()
+                projectilesToDestroy.push(j)
+                if(Projectiles[j].EnemyInvader.Entity.innerHTML == "0"){
+                    Projectiles[j].EnemyInvader.Entity.remove()
+                    Finished = true
+                }
+                
+            }
+        }
+        if (parseInt(Projectiles[j].ProjectileEntity.style.top)<0 || 
+        parseInt(Projectiles[j].ProjectileEntity.style.top)>=280){
+            Projectiles[j].ProjectileEntity.remove()
+            projectilesToDestroy.push(j)
+        }
+    }
+    while(projectilesToDestroy.length>0){
+        Projectiles.splice(projectilesToDestroy[0],1)
+        projectilesToDestroy.shift()
+    }
+}
+}, 10);
+
+function overlapping(obj1,obj2){
+    rect1 = obj1.getBoundingClientRect()
+    rect2 = obj2.getBoundingClientRect()
+    var overlap = !(rect1.right < rect2.left || 
+                rect1.left > rect2.right || 
+                rect1.bottom < rect2.top || 
+                rect1.top > rect2.bottom)
+    return overlap
+}
 </script>
 
 </body>
