@@ -164,12 +164,34 @@ body {
     transform: rotate(360deg);
   }
 }
+#Stats{
+    position: absolute;
+    left: 300px;
+    top: 0px;
+    width: 200px;
+}
+#top{
+    position: absolute;
+    top: 0px;
+    left: 0px;
+
+
+}
+#bottom{
+    position: absolute;
+    top: 200px;
+    left: 0px;
+}
 </style>
 
 </head>
 
 <body>
     <div id="container"></div>
+    <div id="Stats">
+        <div id="top">Attack Speed = </div>
+        <div id="bottom">Attack Speed = </div>
+    </div>
 <script>
     container = document.getElementById("container")
     class Invader{
@@ -177,8 +199,9 @@ body {
             this.name = name
             this.speed = 1
             this.direction = 'left'
-            this.maxSpeed = 2
+            this.maxSpeed = 1
             this.attackSpeed = 1
+            this.ProjectileSpeed = 1
         }
         instantiate(){
             var Entity = document.createElement("div")
@@ -194,6 +217,7 @@ body {
         constructor(invader,EnemyInvader){
             this.invader = invader
             this.EnemyInvader = EnemyInvader
+            this.speed = invader.ProjectileSpeed
             
         }
         instantiate(){
@@ -202,7 +226,7 @@ body {
             ProjectileEntity.className = "ProjectileEntity"
             ProjectileEntity.style.top = this.invader.Entity.style.top
             ProjectileEntity.style.left = this.invader.Entity.style.left
-            ProjectileEntity.style.width = 20-this.invader.attackSpeed*3+"px"
+            ProjectileEntity.style.width = "20px"
             if(this.invader.name == "Shotgun"){
                 ProjectileEntity.style.width = "70px"
             }
@@ -223,16 +247,24 @@ body {
         
 
         //Speedster = ms5
-        opp.maxSpeed = 1
+        opp.maxSpeed = 3
+        opp.ProjectileSpeed = 2
         opp.instantiate()
         opp.Entity.style.backgroundColor = "yellow"
 
         //Shooter = as4
         inv.attackSpeed = 1
+        
         inv.instantiate()
         inv.Entity.style.backgroundColor = "green"
         
-
+        Top = document.getElementById("top")
+        Top.innerHTML = inv.name+"<br>Attack Speed: "+inv.attackSpeed+"<br>Move Speed: "+inv.maxSpeed+"<br>Projectile speed: "+inv.ProjectileSpeed
+        bottom = document.getElementById("bottom")
+        bottom.innerHTML = opp.name+"<br>Attack Speed: "+opp.attackSpeed+"<br>Move Speed: "+opp.maxSpeed+"<br> Projectile speed: "+opp.ProjectileSpeed
+        if(inv.name == "Shotgun"){
+            Top.innerHTML += "<br>Projectile width: 70"
+        }
         opp.Entity.style.left = "130px"
         opp.Entity.style.top = "260px"
         
@@ -280,13 +312,14 @@ const interval = setInterval(function() {
         }
     }
     projectilesToDestroy = []
+
     for(let j = 0;j<Projectiles.length;j++){
         //console.log(Projectiles[j].ProjectileEntity.style.top)
         if(Projectiles[j].ProjectileEntity){
             if(Projectiles[j].direction == 'down'){
-                Projectiles[j].ProjectileEntity.style.top = parseInt(Projectiles[j].ProjectileEntity.style.top)-1+"px"
+                Projectiles[j].ProjectileEntity.style.top = parseInt(Projectiles[j].ProjectileEntity.style.top)-Projectiles[j].speed+"px"
             }else{
-                Projectiles[j].ProjectileEntity.style.top = (parseInt(Projectiles[j].ProjectileEntity.style.top)+1)+"px"
+                Projectiles[j].ProjectileEntity.style.top = (parseInt(Projectiles[j].ProjectileEntity.style.top)+Projectiles[j].speed)+"px"
             }
             //console.log(newProj.ProjectileEntity.getBoundingClientRect(),
              //           EnemyInvader.Entity.getBoundingClientRect())
